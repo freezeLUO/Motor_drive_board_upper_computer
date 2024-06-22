@@ -1,0 +1,14 @@
+D:\Programming\C#\电机驱动板上位机V1.1\bin\Release\电机驱动板上位机V1.1.exe.config
+D:\Programming\C#\电机驱动板上位机V1.1\bin\Release\电机驱动板上位机V1.1.exe
+D:\Programming\C#\电机驱动板上位机V1.1\bin\Release\电机驱动板上位机V1.1.pdb
+D:\Programming\C#\电机驱动板上位机V1.1\bin\Release\SunnyUI.dll
+D:\Programming\C#\电机驱动板上位机V1.1\bin\Release\SunnyUI.Common.dll
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.csproj.AssemblyReference.cache
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.csproj.SuggestedBindingRedirects.cache
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1._1.Form1.resources
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1._1.Properties.Resources.resources
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.csproj.GenerateResource.cache
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.csproj.CoreCompileInputs.cache
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.csproj.CopyComplete
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.exe
+D:\Programming\C#\电机驱动板上位机V1.1\obj\Release\电机驱动板上位机V1.1.pdb

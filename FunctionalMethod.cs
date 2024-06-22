@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace 电机驱动板上位机V1._1
 {
@@ -88,35 +89,46 @@ namespace 电机驱动板上位机V1._1
             }
 
         }
-
+        int count = 0;
         //串口通讯
         private void comsend(string com)
         {
-            //向端口发送485通讯
-            byte crclo, crchi;
-            // 根据每三个字符代表一个字节的规则计算字节长度
-            int Length = (com.Length + 1) / 3;
-
-            // 初始化字节数组以存储要发送的数据和 CRC 检查
-            byte[] dpp = new byte[Length + 2];
-
-            // 将字符串的每三个字符转换为一个字节并存储在字节数组中
-            for (int i = 0; i < Length; i++)
+            try
             {
-                dpp[i] = byte.Parse(com.Substring(3 * i, 2), System.Globalization.NumberStyles.HexNumber);
+                //向端口发送485通讯
+                byte crclo, crchi;
+                // 根据每三个字符代表一个字节的规则计算字节长度
+                int Length = (com.Length + 1) / 3;
+
+
+                // 初始化字节数组以存储要发送的数据和 CRC 检查
+                byte[] dpp = new byte[Length + 2];
+
+                // 将字符串的每三个字符转换为一个字节并存储在字节数组中
+                for (int i = 0; i < Length; i++)
+                {
+                    dpp[i] = byte.Parse(com.Substring(3 * i, 2), System.Globalization.NumberStyles.HexNumber);
+                }
+
+                // 计算 CRC 检查并将结果存储在字节数组的最后两个位置
+                crc16(dpp, Length, out crclo, out crchi);
+                dpp[Length] = crclo;
+                dpp[Length + 1] = crchi;
+
+                // 通过所选的串口发送数据
+                serialPort1.Write(dpp, 0, Length + 2);
+                string receiveData = BitConverter.ToString(dpp);
+
+                TextBox_sp.SelectionColor = Color.Blue;
+                TextBox_sp.AppendText(DateTime.Now.ToString("HH:mm:ss") + " 发:" + receiveData + Environment.NewLine);
+                //更新到最新一行
+                TextBox_sp.ScrollToCaret();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
 
-            // 计算 CRC 检查并将结果存储在字节数组的最后两个位置
-            crc16(dpp, Length, out crclo, out crchi);
-            dpp[Length] = crclo;
-            dpp[Length + 1] = crchi;
-
-            // 通过所选的串口发送数据
-            serialPort1.Write(dpp, 0, Length + 2);
-            string receiveData = BitConverter.ToString(dpp);
-           
-            TextBox_sp.SelectionColor = Color.Blue;
-            TextBox_sp.AppendText(DateTime.Now.ToString("HH:mm:ss") + " 发:" + receiveData + Environment.NewLine);
         }
 
         float scale1 = 3.3F / 2.5F;
@@ -124,23 +136,105 @@ namespace 电机驱动板上位机V1._1
         //数据解析
         private void dataAnalysis(byte[] buffer)
         {
-            //读取位置
-            if (buffer[1] == 0x04)
+            
+            if (buffer.Length > 5)
             {
+                //读取位置
+                if (buffer[1] == 0x04)
+                {
 
-                float value1 = ((buffer[3] << 8) | buffer[4]);
-                float value2 = (buffer[5] << 8) | buffer[6];
-                //将0-4095的值转换为0-360度
-                angle1 = value1 * scale1 * scale2;
-                angle2 = value2 * scale1 * scale2;
+                    float value1 = ((buffer[3] << 8) | buffer[4]);
+                    float value2 = (buffer[5] << 8) | buffer[6];
+                    //将0-4095的值转换为0-360度
+                    angle1 = value1 * scale1 * scale2;
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        uiTextBox2.Text = angle1.ToString();
+                    }));
+
+                    angle2 = value2 * scale1 * scale2;
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        TextBox_main.AppendText("电机1位置：" + angle1 + "°" + Environment.NewLine);
+                        //TextBox_main.AppendText("电机2位置：" + angle2 + "°" + Environment.NewLine);
+                    }));
+
+                    count++;
+                }
+
+                //设置速度
+                else if (buffer[1] == 0x06)
+                {
+                    speed1 = buffer[4];
+                    speed2 = buffer[6];
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        TextBox_main.AppendText("获取转速为：" + speed1.ToString() + Environment.NewLine);
+                    }));
+
+                }
+
+                //设置新地址
+                else if (buffer[1] == 0x06)
+                {
+                    byte a1 = buffer[4];
+                    if (a1 == 0xFF)
+                    {
+                        int a2 = buffer[6];
+
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            TextBox_main.AppendText("成功设置新地址为：" + a2 + Environment.NewLine);
+                        }));
+                    }
+                    else
+                    {
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            TextBox_main.AppendText("设置新地址失败" + Environment.NewLine);
+                        }));
+
+                    }
+                }
+
+                //设置波特率
+                else if (buffer[1] == 0x0A)
+                {
+                    byte a1 = buffer[3];
+                    if (a1 == 0xFF)
+                    {
+                        int a2 = (buffer[3] << 16) | (buffer[4] << 8) | buffer[5];
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            TextBox_main.AppendText("成功设置新波特率为：" + a2 + Environment.NewLine);
+                        }));
+
+                    }
+                    else
+                    {
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            TextBox_main.AppendText("设置新波特率失败" + Environment.NewLine);
+                        }));
+
+                    }
+                }
+                //设置位置模式角度提前量
+                else if (buffer[1] == 0x0B)
+                {
+                    float value1 = ((buffer[3] << 8) | buffer[4]);
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        TextBox_main.AppendText("成功设置位置模式角度提前量为：" + value1/100 + "°" + Environment.NewLine);
+                    }));
+                }
+
+                else
+                {
+                    //...
+                }
             }
 
-            else if(buffer[1] == 0x06)
-            {
-                speed1 = buffer[4];
-                speed2 = buffer[6];
-                TextBox_speed.Text = speed1.ToString();
-            }
         }
 
     }
